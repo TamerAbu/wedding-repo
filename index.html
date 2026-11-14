@@ -161,13 +161,11 @@ img.av{display:block}
 .ss{position:fixed;inset:0;z-index:70;background:#0e0d0c;display:none;overflow:hidden;cursor:none}
 .ss.open{display:block}
 .ss.ui{cursor:default}
-.ss-slide{position:absolute;inset:0;opacity:0;transition:opacity 1.6s ease}
+.ss-slide{position:absolute;inset:0;opacity:0;transition:opacity 1.2s ease-in-out}
 .ss-slide.on{opacity:1}
-.ss-slide img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transform-origin:center;will-change:transform}
-.ss-slide .bg{position:absolute;inset:-40px;background-size:cover;background-position:center;filter:blur(40px) brightness(.45);transform:scale(1.1)}
-@keyframes kbA{from{transform:scale(1)}to{transform:scale(1.08) translate(-1%,-1%)}}
-@keyframes kbB{from{transform:scale(1.08) translate(1%,0)}to{transform:scale(1)}}
-@keyframes kbC{from{transform:scale(1.02) translate(0,1%)}to{transform:scale(1.09) translate(0,-1%)}}
+.ss-slide img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.ss-slide .bg{position:absolute;inset:-40px;background-size:cover;background-position:center;filter:blur(40px) brightness(.45)}
+@media (prefers-reduced-motion: reduce){.ss-slide{transition-duration:.4s}}
 .ss-bar{position:absolute;left:0;right:0;bottom:0;padding:18px 20px 22px;display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(transparent,rgba(0,0,0,.55));opacity:0;transition:opacity .3s}
 .ss.ui .ss-bar,.ss.ui .ss-top{opacity:1}
 .ss-top{position:absolute;left:0;right:0;top:0;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;color:#d9d2c6;font:400 13px Jost,sans-serif;letter-spacing:.14em;background:linear-gradient(rgba(0,0,0,.5),transparent);opacity:0;transition:opacity .3s}
@@ -184,6 +182,19 @@ img.av{display:block}
 .sheet a.dl:hover{border-color:var(--accent)}
 .sheet a.dl small{color:var(--muted);font-size:12px;white-space:nowrap}
 .sheet .note{font-size:12px;color:var(--muted);margin:8px 0 14px}
+.sheet .opt{display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;background:#fff;border:1px solid var(--sand);border-radius:12px;padding:14px 16px;margin-bottom:10px;color:var(--ink);font:400 15px Jost,sans-serif;cursor:pointer;text-align:left}
+.sheet .opt:hover{border-color:var(--accent)}
+.sheet .opt small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.sheet .opt b{font-weight:500}
+.sheet .opt .sz{color:var(--muted);font-size:12px;white-space:nowrap}
+.sheet .who{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 14px}
+.sheet .who span{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--sand);border-radius:999px;padding:3px 10px 3px 3px;font-size:13px}
+.prog{display:none;margin:4px 0 12px}
+.prog.on{display:block}
+.prog .bar{height:6px;border-radius:99px;background:var(--sand);overflow:hidden}
+.prog .bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+.prog .txt{font-size:13px;color:var(--muted);margin-top:8px;display:flex;justify-content:space-between;gap:10px}
+.sheet .cancel{border:0;background:none;color:var(--accent);font:500 12px Jost,sans-serif;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;padding:0}
 .sheet .close{border:1px solid #d8cdbb;background:#fff;border-radius:999px;padding:9px 18px;font:500 12px Jost,sans-serif;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;float:right}
 </style>
 </head>
@@ -221,19 +232,26 @@ img.av{display:block}
 
 <div class="sheet-bg" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetT">
   <div class="sheet">
-    <h3 id="sheetT">Download all photos</h3>
-    <p>All 232 photos in full original quality, straight from the photographer. It's a big download, so it comes in two parts. Download both.</p>
-    <a class="dl" id="dlP1" href="#">Part 1 · photos 1–116 <small id="dlS1"></small></a>
-    <a class="dl" id="dlP2" href="#">Part 2 · photos 117–232 <small id="dlS2"></small></a>
-    <div class="note">Best on a computer. On a phone, open any photo and tap the download button to save it in full quality.</div>
+    <h3 id="sheetT">Download photos</h3>
+    <p id="sheetP"></p>
+    <div class="who" id="sheetWho"></div>
+    <div id="sheetAll">
+      <a class="dl" id="dlP1" href="#">Part 1 · photos 1–116 <small id="dlS1"></small></a>
+      <a class="dl" id="dlP2" href="#">Part 2 · photos 117–232 <small id="dlS2"></small></a>
+    </div>
+    <div id="sheetOpts">
+      <button class="opt" id="optOrig"><span><b>Original quality</b><small>Full-size files from the photographer</small></span><span class="sz" id="szOrig"></span></button>
+      <button class="opt" id="optWeb"><span><b>Smaller, for phones</b><small>Screen size, quick to download</small></span><span class="sz" id="szWeb"></span></button>
+    </div>
+    <div class="prog" id="prog"><div class="bar"><i id="progBar"></i></div><div class="txt"><span id="progTxt"></span><button class="cancel" id="progCancel">Cancel</button></div></div>
+    <div class="note" id="sheetNote"></div>
     <button class="close" id="sheetClose">Close</button>
     <div style="clear:both"></div>
   </div>
 </div>
 
 <div class="ss" id="ss" aria-label="Slideshow">
-  <div class="ss-slide" id="ssA"><div class="bg"></div><img alt=""></div>
-  <div class="ss-slide" id="ssB"><div class="bg"></div><img alt=""></div>
+  <div id="ssStage"></div>
   <div class="ss-top"><span class="ss-title" id="ssTitle">Our Wedding</span><span id="ssCount"></span></div>
   <div class="ss-bar">
     <button class="lb-btn" id="ssPrev" aria-label="Previous"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -262,6 +280,8 @@ const PHOTOS = [["DSC_4542.jpg", 1600, 1064], ["DSC_4543.jpg", 1600, 1065], ["DS
 const DATA = {"tags":{"DSC_4714":["Dana","Eytan"],"DSC_4921":["Tamer","Dana"],"DSC_5089":["Tamer","Dana"],"DSC_4919":["Tamer","Dana"],"DSC_4883":["Tamer","Dana"],"DSC_4882":["Tamer","Dana"],"DSC_4645":["Dana","Eytan"],"DSC_4867":["Tamer","Dana"],"DSC_4884":["Tamer","Dana"],"DSC_4866":["Tamer","Dana"],"DSC_4865":["Tamer","Dana"],"DSC_4863":["Tamer","Dana"],"DSC_5087":["Tamer","Dana"],"DSC_4717":["Dana","Valentina"],"DSC_4788":["Dana","Sausan"],"DSC_4937":["Tamer","Dana"],"DSC_5088":["Tamer","Dana"],"DSC_5103":["Tamer","Dana"],"DSC_4879":["Tamer","Dana","Dimitri"],"DSC_5058":["Tamer","Dana"],"DSC_5099":["Tamer","Dana"],"DSC_5060":["Tamer","Dana"],"DSC_5074":["Tamer","Dana"],"DSC_4891":["Tamer","Dana"],"DSC_5079":["Tamer","Dana"],"DSC_4785":["Tamer","Dana","Sausan"],"DSC_5054":["Tamer","Dana"],"DSC_4895":["Tamer","Dana"],"DSC_5061":["Tamer","Dana"],"DSC_4862":["Tamer","Dana"],"DSC_5049":["Tamer","Dana"],"DSC_4719":["Dana","Valentina"],"DSC_4888":["Tamer","Dana","Dimitri"],"DSC_4730":["Dana","Anna"],"DSC_5067":["Tamer","Dana"],"DSC_4801":["Dana","Anna"],"DSC_5104":["Tamer","Dana"],"DSC_5102":["Dana"],"DSC_5063":["Tamer","Dana"],"DSC_4901":["Tamer","Dana"],"DSC_5065":["Tamer","Dana"],"DSC_4906":["Tamer","Dana"],"DSC_4899":["Tamer","Dana"],"DSC_5098":["Tamer","Dana"],"DSC_5101":["Tamer","Dana"],"DSC_4700":["Tamer","Dana","Eytan"],"DSC_4723":["Dana","Yakov"],"DSC_5013":["Tamer","Dana","Sausan","Valentina","Artyum"],"DSC_5012":["Tamer","Dana","Sausan","Yakov","Valentina","Eytan","Artyum"],"DSC_4699":["Tamer","Dana","Razi","Eytan"],"DSC_4710":["Tamer","Dana","Eytan"],"DSC_5003":["Tamer","Dana","Mahmoud","Amir","Yakov","Valentina","Michael","Eytan","Artyum","Garson"],"DSC_4902":["Tamer","Dana"],"DSC_4614":["Dana"],"DSC_4610":["Dana"],"DSC_4608":["Dana"],"DSC_4873":["Tamer","Dana"],"DSC_4849":["Tamer","Dana","Dimitri"],"DSC_4905":["Tamer","Dana"],"DSC_4621":["Dana"],"DSC_4732":["Dana","Anna"],"DSC_5004":["Tamer","Dana","Mahmoud","Amir","Yakov","Michael","Eytan","Artyum","Garson"],"DSC_4622":["Dana"],"DSC_4720":["Dana","Valentina"],"DSC_4626":["Dana"],"DSC_4999":["Tamer","Dana","Lulu","Sausan","Amir","Samar","Yakov","Valentina","Michael","Anna","Eytan","Artyum","Garson"],"DSC_5000":["Tamer","Dana","Lulu","Sausan","Amir","Samar","Yakov","Valentina","Michael","Anna","Eytan","Artyum","Garson"],"DSC_4573":["Tamer","Dana","Artyum","Garson"],"DSC_4693":["Tamer","Dana","Artyum","Garson"],"DSC_4639":["Tamer","Dana"],"DSC_4624":["Dana"],"DSC_4640":["Tamer","Dana"],"DSC_4636":["Tamer","Dana"],"DSC_4682":["Tamer","Dana","Mahmoud","Lulu"],"DSC_4681":["Tamer","Dana","Mahmoud","Lulu"],"DSC_4683":["Tamer","Dana","Mahmoud","Lulu"],"DSC_4998":["Tamer","Dana","Mahmoud","Lulu","Sausan","Amir","Samar","Yakov","Valentina","Michael","Anna","Eytan","Artyum","Garson"],"DSC_4641":["Tamer","Dana"],"DSC_4724":["Dana","Yakov"],"DSC_4577":["Tamer","Dana","Artyum","Garson"],"DSC_4629":["Tamer","Dana"],"DSC_4926":["Tamer","Dana"],"DSC_4606":["Dana"],"DSC_4627":["Tamer","Dana"],"DSC_4687":["Tamer","Dana","Sausan","Amir","Anna"],"DSC_4997":["Tamer","Dana","Sausan","Amir","Samar","Yakov","Valentina","Michael","Anna","Eytan","Artyum","Garson"],"DSC_4642":["Tamer","Dana"],"DSC_4928":["Tamer","Dana"],"DSC_4630":["Tamer","Dana"],"DSC_4839":["Tamer","Dana"],"DSC_4597":["Tamer","Dana"],"DSC_4644":["Tamer","Dana"],"DSC_4669":["Tamer","Dana","Mahmoud","Lulu","Yakov","Valentina"],"DSC_4776":["Tamer","Dana","Mahmoud","Lulu","Sausan","Amir","Samar","Razi"],"DSC_4680":["Tamer","Dana","Yakov","Valentina"],"DSC_4574":["Tamer","Dana","Artyum","Garson"],"DSC_4678":["Tamer","Dana","Yakov","Valentina"],"DSC_4691":["Tamer","Dana","Sausan","Amir","Anna"],"DSC_4996":["Tamer","Dana","Mahmoud","Amir","Yakov","Michael","Anna","Eytan","Artyum","Garson"],"DSC_5166":["Tamer","Dana","Mahmoud","Lulu","Sausan","Amir","Samar","Valentina","Michael","Anna","Eytan","Artyum","Garson"],"DSC_5164":["Tamer","Dana","Mahmoud","Lulu","Sausan","Amir","Samar","Yakov","Valentina","Michael","Anna","Artyum","Garson"],"DSC_4995":["Tamer","Dana","Mahmoud","Amir","Samar","Eytan","Artyum","Garson"],"DSC_4633":["Tamer","Dana"],"DSC_4778":["Tamer","Dana","Mahmoud","Lulu","Sausan","Amir","Samar","Razi"],"DSC_4852":["Tamer","Dana","Dimitri"],"DSC_4632":["Tamer","Dana"],"DSC_4675":["Tamer","Dana","Mahmoud","Lulu","Yakov","Valentina"],"DSC_4837":["Tamer","Dana"],"DSC_4929":["Tamer","Dana"],"DSC_5159":["Tamer","Dana","Mahmoud","Lulu","Amir","Samar","Valentina","Anna","Eytan","Artyum","Garson"],"DSC_4994":["Tamer","Dana","Amir","Eytan","Artyum"],"DSC_4836":["Tamer","Dana"],"DSC_4835":["Tamer","Dana"],"DSC_4991":["Tamer","Dana","Amir","Samar","Eytan"],"DSC_5171":["Tamer","Dana","Mahmoud","Lulu","Sausan","Amir","Samar","Yakov","Valentina","Michael","Anna","Artyum","Garson"],"DSC_5174":["Tamer","Dana","Sausan","Amir","Samar","Valentina","Michael","Eytan","Artyum","Garson"],"DSC_4657":["Tamer","Dana","Mahmoud","Lulu","Sausan","Amir","Samar","Razi","Yakov","Valentina","Michael","Anna","Eytan","Artyum","Garson"],"DSC_4664":["Tamer","Dana","Mahmoud","Lulu","Sausan","Amir","Samar","Razi","Yakov","Valentina","Michael","Anna","Eytan","Artyum","Garson"],"DSC_4660":["Tamer","Dana","Mahmoud","Lulu","Sausan","Amir","Samar","Razi","Yakov","Valentina","Michael","Anna","Eytan","Artyum","Garson"],"DSC_4646":["Dana","Eytan"],"DSC_4944":["Tamer","Dimitri"],"DSC_4870":["Tamer"],"DSC_4946":["Tamer","Dimitri"],"DSC_4943":["Tamer"],"DSC_4808":["Tamer","Mahmoud","Amir"],"DSC_4975":["Tamer","Dimitri"],"DSC_4580":["Tamer","Artyum","Garson"],"DSC_4579":["Tamer","Artyum","Garson"],"DSC_4978":["Tamer","Dimitri"],"DSC_4582":["Tamer","Artyum","Garson"],"DSC_4586":["Tamer","Artyum","Garson"],"DSC_4585":["Tamer","Artyum","Garson"],"DSC_4584":["Tamer","Artyum","Garson"],"DSC_4848":["Tamer"],"DSC_5023":["Tamer","Mahmoud","Lulu","Sausan"],"DSC_4885":["Tamer","Dana","Dimitri"],"DSC_4662":["Tamer","Dana","Mahmoud","Lulu","Sausan","Amir","Samar","Razi","Yakov","Valentina","Michael","Anna","Eytan","Artyum","Garson"],"DSC_4967":["Amir","Dimitri"],"DSC_4774":["Amir","Samar","Razi"],"DSC_4766":["Amir","Samar","Razi"],"DSC_4767":["Amir","Samar","Razi"],"DSC_4971":["Mahmoud","Amir","Dimitri"],"DSC_4963":["Amir"],"DSC_4653":["Amir"],"DSC_4768":["Amir","Samar","Razi"],"DSC_4795":["Amir","Samar"],"DSC_4772":["Amir","Samar","Razi"],"DSC_4798":["Amir","Samar"],"DSC_5046":["Amir","Samar","Valentina","Anna","Eytan","Artyum","Garson"],"DSC_5045":["Amir","Samar","Eytan","Artyum","Garson"],"DSC_5037":["Mahmoud","Lulu","Amir","Samar","Yakov","Valentina","Anna","Eytan","Artyum","Garson"],"DSC_5039":["Mahmoud","Lulu","Amir","Samar","Artyum","Garson"],"DSC_5040":["Mahmoud","Lulu","Amir","Samar","Eytan","Artyum","Garson"],"DSC_5041":["Mahmoud","Lulu","Amir","Samar","Eytan","Artyum","Garson"],"DSC_4746":["Michael","Eytan"],"DSC_4793":["Eytan"],"DSC_4748":["Michael","Eytan"],"DSC_4649":["Eytan"],"DSC_4745":["Michael","Eytan"],"DSC_4749":["Michael","Eytan"],"DSC_4647":["Eytan"],"DSC_4648":["Eytan"],"DSC_4743":["Michael","Eytan"],"DSC_4738":["Michael","Anna","Eytan"],"DSC_4812":["Michael","Anna","Eytan"],"DSC_4736":["Michael","Anna","Eytan"],"DSC_4735":["Michael","Anna","Eytan"],"DSC_4827":["Yakov","Valentina","Eytan"],"DSC_4823":["Yakov","Valentina","Eytan"],"DSC_4828":["Yakov","Valentina","Eytan"],"DSC_4741":["Michael","Anna","Eytan"],"DSC_4815":["Michael","Anna","Eytan"],"DSC_4830":["Yakov","Valentina","Eytan"],"DSC_5044":["Eytan"],"DSC_4783":["Lulu","Samar"],"DSC_4651":["Sausan","Samar"],"DSC_4650":["Sausan","Samar"],"DSC_4652":["Sausan","Samar"],"DSC_4751":["Samar","Valentina","Michael"],"DSC_4753":["Mahmoud","Samar","Michael"],"DSC_5029":["Mahmoud","Samar"],"DSC_5008":["Lulu","Samar","Yakov","Valentina","Michael","Anna","Eytan","Garson"],"DSC_4833":["Mahmoud","Lulu","Yakov","Valentina","Anna","Garson"],"DSC_5042":["Mahmoud","Amir","Eytan","Garson"],"DSC_4761":["Mahmoud","Lulu"],"DSC_4762":["Mahmoud","Lulu"],"DSC_4655":["Mahmoud","Lulu"],"DSC_4764":["Mahmoud","Lulu"],"DSC_4846":["Mahmoud"],"DSC_4831":["Mahmoud","Lulu","Valentina"],"DSC_4816":["Michael","Anna"],"DSC_4819":["Michael"],"DSC_4806":["Lulu","Sausan"],"DSC_4654":["Lulu"],"DSC_4800":["Anna"],"DSC_4964":["Mahmoud","Dimitri"],"DSC_4959":["Dimitri"],"DSC_4949":["Dana","Dimitri"],"DSC_4951":["Dana","Dimitri"],"DSC_4952":["Dana","Dimitri"],"DSC_4954":["Dana","Dimitri"],"DSC_4869":["Dimitri"],"DSC_4544":["Tamer"],"DSC_4542":["Tamer"],"DSC_4820":["Michael"],"DSC_4983":["Tamer"],"DSC_4547":["Dana"],"DSC_4987":["Tamer"],"DSC_4985":["Tamer"]},"avatars":{"Dana":"people/dana.jpg","Tamer":"people/tamer.jpg","Amir":"people/amir.jpg","Eytan":"people/eytan.jpg","Samar":"people/samar.jpg","Garson":"people/garson.jpg","Artyum":"people/artyum.jpg","Mahmoud":"people/mahmoud.jpg","Valentina":"people/valentina.jpg","Michael":"people/michael.jpg","Lulu":"people/lulu.jpg","Sausan":"people/sausan.jpg","Anna":"people/anna.jpg","Yakov":"people/yakov.jpg","Dimitri":"people/dimitri.jpg","Razi":"people/razi.jpg"}};
 const RELEASE = 'https://github.com/TamerAbu/wedding-repo/releases/download/originals/';
 const ZIPS = [{"name": "Tamer-Dana-Wedding-Part-1-of-2.zip", "size": "1.6 GB"}, {"name": "Tamer-Dana-Wedding-Part-2-of-2.zip", "size": "1.5 GB"}];
+const SIZES = {"orig": [14852280, 17419606, 15979173, 16161845, 13536078, 14775444, 10586284, 13388750, 11773594, 12190070, 14559243, 17204015, 10395776, 11369555, 12637032, 12578511, 12565962, 12556796, 12257029, 12209850, 10551804, 11860620, 14436853, 11238284, 12478206, 14662093, 15029275, 13932065, 14902639, 14892092, 13441070, 11497242, 13546274, 12917088, 14278420, 15764591, 15696674, 14624356, 14598514, 14566187, 14635229, 15229689, 15123899, 14376675, 13756686, 14486976, 14209793, 14409301, 13676613, 13845014, 13698850, 12785206, 13028689, 13465051, 14690007, 11981217, 14190571, 15417256, 13407767, 12099582, 13115965, 13906938, 14196444, 14260600, 14905278, 14903710, 12417665, 12213907, 13993055, 13386089, 13227607, 14124105, 14125496, 17616576, 15807333, 13698068, 12829963, 14473101, 16323947, 16304099, 13578083, 14557641, 14135468, 17279503, 16535396, 14472248, 13594242, 14322036, 15087748, 14723397, 12386155, 19997406, 14661862, 14528914, 14969693, 13983218, 10577415, 12038665, 12803018, 11017566, 10173655, 11858811, 13830376, 14688459, 14050799, 15387804, 13380863, 12646061, 13690378, 10924803, 9920358, 13717238, 13738660, 13764141, 10778242, 12682485, 17047540, 15095040, 11961879, 12560782, 13692872, 14579941, 14842695, 16305014, 14169415, 17838749, 14815351, 14145804, 14227032, 12745238, 13996671, 14872718, 10181887, 12909267, 10251892, 10428424, 10299405, 15748391, 13321683, 12992228, 13670379, 14122744, 10569538, 9978420, 9246818, 11372216, 13442752, 10955342, 11536685, 10247021, 9935721, 10049425, 10552998, 11451075, 10155692, 9069943, 8209785, 10398968, 10264858, 11963670, 9648752, 8935408, 13214803, 11093296, 12999635, 13797228, 14389844, 13755728, 12484060, 17790097, 16415821, 12944341, 17806454, 16815416, 13330632, 8923976, 15836624, 16882391, 16833657, 16693112, 15911291, 17328486, 13095439, 12902881, 11310673, 13357378, 13481284, 13208455, 11936473, 9104751, 13284938, 11780733, 10659799, 11583441, 14749491, 14079554, 16638344, 16513926, 14781463, 12840969, 12431611, 12414031, 17376520, 17635762, 14140595, 14216266, 12289857, 11055681, 10073704, 10253108, 9440171, 10856810, 10454325, 9980865, 11713594, 11436738, 12996589, 12369176, 12476771, 14725484, 10280831, 12802085, 13523244, 13481919, 13743174, 12679592, 13371421, 17302315, 15351446, 15174775, 21161012, 20446171], "web": [192456, 193155, 171821, 172679, 162421, 181213, 84114, 131416, 96777, 119237, 114385, 330993, 134901, 171936, 132186, 133071, 133230, 158104, 134399, 133004, 134853, 141423, 198052, 173703, 228139, 213673, 222325, 197189, 214509, 216536, 228854, 209137, 250462, 246654, 293270, 286006, 286749, 234873, 249724, 239398, 243343, 263917, 263687, 137645, 135052, 163636, 163928, 145239, 128534, 127336, 120928, 111983, 128496, 143630, 129010, 205915, 212260, 209854, 215247, 164089, 155159, 146666, 149119, 134954, 138603, 138992, 131680, 141548, 127828, 115451, 115906, 116352, 115926, 166634, 142451, 143998, 102639, 137528, 137520, 145806, 149656, 152410, 149508, 167633, 163735, 142916, 134617, 139907, 138901, 147747, 122239, 307163, 222008, 158636, 144541, 155893, 122054, 122285, 118591, 138950, 131278, 174882, 194569, 168955, 153383, 159337, 185047, 164872, 135404, 97006, 130057, 176373, 153787, 183605, 133622, 178423, 255173, 174864, 178751, 166787, 178956, 187282, 188397, 261290, 255370, 358316, 191815, 179621, 166683, 227685, 191025, 155709, 148263, 190233, 123691, 120912, 126390, 109791, 108031, 201346, 113829, 121648, 135825, 128130, 123511, 131738, 154208, 140970, 143857, 145927, 139841, 142478, 170714, 161206, 160371, 114178, 120819, 142165, 138475, 149250, 113058, 122602, 173728, 162630, 174439, 142587, 154590, 183959, 175919, 188964, 175377, 133618, 182905, 184521, 207748, 166874, 172444, 197332, 193830, 184035, 259298, 278652, 246297, 246964, 216898, 230342, 230384, 224848, 201220, 191533, 213479, 149779, 150628, 112099, 139167, 166232, 291275, 237848, 216371, 241014, 238358, 230168, 220868, 218262, 240205, 244879, 146758, 136963, 134948, 133375, 133280, 145643, 145381, 154154, 135662, 133450, 134157, 125934, 130639, 155210, 148932, 133286, 140486, 142558, 154802, 125998, 142562, 370274, 327428, 330013, 451214, 446700]};
+const RAW = 'https://raw.githubusercontent.com/TamerAbu/wedding-repo/originals/originals/';
 const ORDER = ['Tamer','Dana','Mahmoud','Lulu','Sausan','Amir','Samar','Razi','Yakov','Valentina','Michael','Anna','Eytan'];
 const rank = n => { const i=ORDER.indexOf(n); return i<0 ? 999 : i; };
 const keyOf = f => f.replace(/\.jpg$/i,'');
@@ -290,6 +310,7 @@ function applyFilter(){
   const vis=new Set(visibleIdx());
   tiles.forEach((t,i)=>{ t.b.style.display = vis.has(i)?'':'none'; });
   $('count').textContent = sel.size ? vis.size+' of '+PHOTOS.length : PHOTOS.length;
+  if(window.updateDlLabel) updateDlLabel();
 }
 function avatarEl(name, px){
   if(AV[name]){ const im=document.createElement('img'); im.className='av'; im.src=AV[name]; im.alt=''; im.width=px; im.height=px; im.style.width=im.style.height=px+'px'; im.style.borderRadius='50%'; return im; }
@@ -349,15 +370,17 @@ $('lbStage').addEventListener('touchend',e=>{ if(sx===null) return; const dx=e.c
   if(Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy)) step(dx<0?1:-1); else if(dy>90) closeLb(); sx=null; },{passive:true});
 
 /* ---------- slideshow ---------- */
-const ss=$('ss'); const SS_MS=5000; let ssList=[], ssPos=0, ssTimer=null, ssPaused=false, ssFront=0, uiTimer=null, ssStart=0, ssRaf=0;
-const slides=[$('ssA'),$('ssB')]; const KB=['kbA','kbB','kbC'];
+const ss=$('ss'); const SS_MS=5000; let ssList=[], ssPos=0, ssTimer=null, ssPaused=false, uiTimer=null, ssStart=0, ssRaf=0, ssToken=0;
 function ssShow(pos){
-  ssPos=(pos+ssList.length)%ssList.length; const f=PHOTOS[ssList[ssPos]][0];
-  const nxt=slides[1-ssFront], img=nxt.querySelector('img'), bg=nxt.querySelector('.bg');
-  const go=()=>{ bg.style.backgroundImage='url(thumbs/'+f+')';
-    img.style.animation='none'; void img.offsetWidth; img.style.animation=KB[ssPos%3]+' '+(SS_MS+1800)+'ms ease-in-out forwards';
-    nxt.classList.add('on'); slides[ssFront].classList.remove('on'); ssFront=1-ssFront;
-    $('ssCount').textContent=(ssPos+1)+' / '+ssList.length;
+  ssPos=(pos+ssList.length)%ssList.length; const f=PHOTOS[ssList[ssPos]][0]; const my=++ssToken;
+  $('ssCount').textContent=(ssPos+1)+' / '+ssList.length;
+  const slide=document.createElement('div'); slide.className='ss-slide';
+  const bg=document.createElement('div'); bg.className='bg'; bg.style.backgroundImage='url(thumbs/'+f+')';
+  const img=new Image(); img.alt='';
+  slide.append(bg,img);
+  const go=()=>{ if(my!==ssToken) return;            // a newer photo was requested meanwhile
+    const stage=$('ssStage'); stage.append(slide); void slide.offsetWidth; slide.classList.add('on');
+    [...stage.children].forEach(s=>{ if(s!==slide){ s.classList.remove('on'); setTimeout(()=>s.remove(),1300); } });
     const p=new Image(); p.src='full/'+PHOTOS[ssList[(ssPos+1)%ssList.length]][0];
     ssArm(); };
   img.onload=go; img.onerror=go; img.src='full/'+f;
@@ -373,7 +396,7 @@ function openSS(){
   ss.classList.add('open'); document.body.style.overflow='hidden'; ssSetPaused(false); ssShow(0); ssUI();
   try{ if(ss.requestFullscreen) ss.requestFullscreen().catch(()=>{}); }catch(e){}
 }
-function closeSS(){ clearTimeout(ssTimer); cancelAnimationFrame(ssRaf); ss.classList.remove('open'); slides.forEach(s=>s.classList.remove('on')); document.body.style.overflow='';
+function closeSS(){ clearTimeout(ssTimer); cancelAnimationFrame(ssRaf); ssToken++; ss.classList.remove('open'); $('ssStage').textContent=''; document.body.style.overflow='';
   try{ if(document.fullscreenElement) document.exitFullscreen().catch(()=>{}); }catch(e){} }
 $('playBtn').onclick=openSS; $('ssClose').onclick=closeSS;
 $('ssNext').onclick=()=>{ ssShow(ssPos+1); ssUI(); }; $('ssPrev').onclick=()=>{ ssShow(ssPos-1); ssUI(); };
@@ -385,17 +408,93 @@ document.addEventListener('fullscreenchange',()=>{ if(!document.fullscreenElemen
 
 /* ---------- downloads ---------- */
 const sheet=$('sheet');
+const fmt = n => n>=1e9 ? (n/1e9).toFixed(1)+' GB' : n>=1e6 ? Math.round(n/1e6)+' MB' : Math.max(1,Math.round(n/1e3))+' KB';
+const isPhone = matchMedia('(pointer:coarse)').matches || /Android|iPhone|iPad/i.test(navigator.userAgent);
 $('dlP1').href=RELEASE+ZIPS[0].name; $('dlS1').textContent=ZIPS[0].size;
 $('dlP2').href=RELEASE+ZIPS[1].name; $('dlS2').textContent=ZIPS[1].size;
-$('dlBtn').onclick=()=>{ sheet.classList.add('open'); $('sheetClose').focus(); };
-$('sheetClose').onclick=()=>sheet.classList.remove('open');
-sheet.addEventListener('click',e=>{ if(e.target===sheet) sheet.classList.remove('open'); });
+window.updateDlLabel=function(){ const n=visibleIdx().length; document.querySelector('#dlBtn .t').textContent = sel.size ? 'Download '+n : 'Download all'; }
+function openSheet(){
+  const idx=visibleIdx(); const filtered=sel.size>0;
+  const o=idx.reduce((s,i)=>s+SIZES.orig[i],0), w=idx.reduce((s,i)=>s+SIZES.web[i],0);
+  $('sheetT').textContent = filtered ? 'Download these '+idx.length+' photos' : 'Download all photos';
+  const who=$('sheetWho'); who.textContent='';
+  [...sel].forEach(n=>{ const s=document.createElement('span'); s.append(avatarEl(n,22), n); who.append(s); });
+  $('sheetP').textContent = filtered
+    ? (sel.size>1 ? 'Every photo with all of these people in it.' : 'Every photo this person is in.')
+    : 'All 232 photos in full original quality, straight from the photographer. It comes in two parts, so download both.';
+  $('sheetAll').style.display = filtered ? 'none' : '';
+  $('optOrig').style.display = filtered ? '' : 'none';
+  $('szOrig').textContent=fmt(o); $('szWeb').textContent=fmt(w);
+  $('sheetNote').textContent = filtered
+    ? (isPhone && o>800e6 ? 'Original quality is a big download for a phone. "Smaller, for phones" is quicker.' : '')
+    : 'Best on a computer. On a phone, use "Smaller, for phones", or open any photo and tap its download button for the full-quality file.';
+  $('prog').classList.remove('on'); $('sheetOpts').style.display='';
+  sheet.classList.add('open'); $('sheetClose').focus();
+}
+$('dlBtn').onclick=openSheet;
+$('sheetClose').onclick=()=>{ if(job) job.abort(); sheet.classList.remove('open'); };
+sheet.addEventListener('click',e=>{ if(e.target===sheet && !job) sheet.classList.remove('open'); });
+
+/* zip writer: stored (no compression), files written one by one */
+const CRC=(()=>{ const T=new Uint32Array(256); for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c=c&1?0xEDB88320^(c>>>1):c>>>1; T[n]=c>>>0; } return T; })();
+function crc32(b){ let c=0xFFFFFFFF; for(let i=0;i<b.length;i++) c=CRC[(c^b[i])&255]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+function zipWriter(sink){
+  const enc=new TextEncoder(), cen=[]; let off=0, count=0;
+  return {
+    async add(name, data){ const nm=enc.encode(name), c=crc32(data), L=data.length;
+      const h=new DataView(new ArrayBuffer(30)); h.setUint32(0,0x04034b50,true); h.setUint16(4,20,true); h.setUint16(6,0x800,true); h.setUint32(14,c,true); h.setUint32(18,L,true); h.setUint32(22,L,true); h.setUint16(26,nm.length,true);
+      await sink.write(new Uint8Array(h.buffer)); await sink.write(nm); await sink.write(data);
+      const d=new DataView(new ArrayBuffer(46)); d.setUint32(0,0x02014b50,true); d.setUint16(4,20,true); d.setUint16(6,20,true); d.setUint16(8,0x800,true); d.setUint32(16,c,true); d.setUint32(20,L,true); d.setUint32(24,L,true); d.setUint16(28,nm.length,true); d.setUint32(42,off,true);
+      cen.push(new Uint8Array(d.buffer), nm); off+=30+nm.length+L; count++; },
+    async finish(){ let cs=0; for(const x of cen){ await sink.write(x); cs+=x.length; }
+      const e=new DataView(new ArrayBuffer(22)); e.setUint32(0,0x06054b50,true); e.setUint16(8,count,true); e.setUint16(10,count,true); e.setUint32(12,cs,true); e.setUint32(16,off,true);
+      await sink.write(new Uint8Array(e.buffer)); return sink.close(); }
+  };
+}
+function blobSink(filename){ const parts=[]; return { write(x){ parts.push(new Blob([x])); }, close(){ const url=URL.createObjectURL(new Blob(parts,{type:'application/zip'})); const a=document.createElement('a'); a.href=url; a.download=filename; document.body.append(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),60000); } }; }
+async function fileSink(filename){ const h=await window.showSaveFilePicker({suggestedName:filename, types:[{description:'Zip file', accept:{'application/zip':['.zip']}}]}); const w=await h.createWritable(); return { write:x=>w.write(x), close:()=>w.close(), abort:()=>w.abort() }; }
+
+let job=null;
+async function buildZip(original){
+  if(job) return;
+  const idx=visibleIdx(); const label=[...sel].join('-and-').replace(/[^\p{L}\p{N}-]+/gu,'_') || 'All';
+  const filename='Dana-and-Tamer-Wedding-'+label+(original?'':'-small')+'.zip';
+  const total=idx.reduce((s,i)=>s+(original?SIZES.orig[i]:SIZES.web[i]),0);
+  let sink;
+  try{ sink = (!isPhone && window.showSaveFilePicker && !window.__noPicker) ? await fileSink(filename) : blobSink(filename); }
+  catch(e){ return; }   // save dialog cancelled
+  const ctrl=new AbortController(); job={abort:()=>ctrl.abort()};
+  $('sheetOpts').style.display='none'; $('prog').classList.add('on');
+  let done=0, bytes=0, failed=[];
+  const show=()=>{ $('progBar').style.width=(total? bytes/total*100 : 0)+'%'; $('progTxt').textContent=done+' of '+idx.length+' photos · '+fmt(bytes)+' of '+fmt(total); };
+  show();
+  const zip=zipWriter(sink); let chain=Promise.resolve(); let k=0;
+  const fetchOne=async(i)=>{ const f=PHOTOS[i][0]; const url=(original?RAW:'full/')+f;
+    for(let t=0;t<3;t++){ try{ const r=await fetch(url,{signal:ctrl.signal}); if(!r.ok) throw new Error(r.status); return new Uint8Array(await r.arrayBuffer()); }
+      catch(e){ if(ctrl.signal.aborted) throw e; await new Promise(r=>setTimeout(r,800*(t+1))); } }
+    failed.push(f); return null; };
+  const worker=async()=>{ while(k<idx.length && !ctrl.signal.aborted){ const i=idx[k++]; const data=await fetchOne(i);
+      if(data){ chain=chain.then(()=>zip.add(PHOTOS[i][0],data)); await chain; bytes+=data.length; } done++; show(); } };
+  try{
+    await Promise.all(Array.from({length: original?4:6}, worker));
+    if(ctrl.signal.aborted) throw new Error('cancelled');
+    await chain; $('progTxt').textContent='Saving…'; await zip.finish();
+    $('progBar').style.width='100%';
+    $('progTxt').textContent = failed.length ? 'Done, but '+failed.length+' photo(s) could not be downloaded. Try again for those.' : 'Done ✓ '+idx.length+' photos saved';
+    $('progCancel').style.display='none';
+  }catch(e){ try{ sink.abort && sink.abort(); }catch(_){}
+    $('progTxt').textContent = ctrl.signal.aborted ? 'Cancelled' : 'Something went wrong. Please try again.'; $('progCancel').style.display='none'; }
+  job=null; setTimeout(()=>{ $('progCancel').style.display=''; },0);
+}
+$('optOrig').onclick=()=>buildZip(true);
+$('optWeb').onclick=()=>buildZip(false);
+$('progCancel').onclick=()=>{ if(job) job.abort(); };
 
 /* ---------- keys ---------- */
 document.addEventListener('keydown',e=>{
   if(ss.classList.contains('open')){ ssUI();
     if(e.key==='Escape') closeSS(); else if(e.key==='ArrowRight') ssShow(ssPos+1); else if(e.key==='ArrowLeft') ssShow(ssPos-1); else if(e.key===' '){ e.preventDefault(); ssSetPaused(!ssPaused); } return; }
-  if(sheet.classList.contains('open')){ if(e.key==='Escape') sheet.classList.remove('open'); return; }
+  if(sheet.classList.contains('open')){ if(e.key==='Escape' && !job) sheet.classList.remove('open'); return; }
   if(!lb.classList.contains('open')) return;
   if(e.key==='Escape') closeLb(); else if(e.key==='ArrowRight'){ e.preventDefault(); step(1); } else if(e.key==='ArrowLeft'){ e.preventDefault(); step(-1); }
 });
