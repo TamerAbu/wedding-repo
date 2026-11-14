@@ -43,7 +43,7 @@ jobs:
           gh release delete originals --yes --cleanup-tag || true
           gh release create originals --target originals \
             --title "Original photos · Dana & Tamer's wedding" \
-            --notes "All 232 photos in full original quality. Download both zip parts, or pick single photos below. Gallery: https://tamerabu.github.io/Dana-and-Tamer/" \
+            --notes "All 232 photos in full original quality. Download both zip parts, or pick single photos below. Gallery: https://tamerabu.github.io/wedding-repo/" \
             Tamer-Dana-Wedding-Part-1-of-2.zip Tamer-Dana-Wedding-Part-2-of-2.zip
           gh release upload originals Tamer-Dana-Wedding/*.jpg --clobber
           gh release view originals --json assets --jq '.assets | length'
