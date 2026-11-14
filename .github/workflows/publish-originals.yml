@@ -1,0 +1,49 @@
+name: Publish original photos
+
+on:
+  push:
+    branches: [originals]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-originals
+  cancel-in-progress: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: originals
+
+      - name: Wait until all 232 photos are uploaded
+        run: |
+          n=$(ls originals/*.jpg | wc -l)
+          echo "$n of 232 photos in the branch"
+          if [ "$n" -ge 232 ]; then echo "READY=1" >> "$GITHUB_ENV"; fi
+
+      - name: Build the two zip files
+        if: env.READY == '1'
+        run: |
+          mv originals Tamer-Dana-Wedding
+          ls Tamer-Dana-Wedding/*.jpg | sort > all.txt
+          head -n 116 all.txt | zip -0 -q Tamer-Dana-Wedding-Part-1-of-2.zip -@
+          tail -n +117 all.txt | zip -0 -q Tamer-Dana-Wedding-Part-2-of-2.zip -@
+          ls -lh *.zip
+
+      - name: Publish the "originals" release
+        if: env.READY == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete originals --yes --cleanup-tag || true
+          gh release create originals --target originals \
+            --title "Original photos · Dana & Tamer's wedding" \
+            --notes "All 232 photos in full original quality. Download both zip parts, or pick single photos below. Gallery: https://tamerabu.github.io/Dana-and-Tamer/" \
+            Tamer-Dana-Wedding-Part-1-of-2.zip Tamer-Dana-Wedding-Part-2-of-2.zip
+          gh release upload originals Tamer-Dana-Wedding/*.jpg --clobber
+          gh release view originals --json assets --jq '.assets | length'
